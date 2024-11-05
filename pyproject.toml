@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "clean-til"
+version = "0.1.0"
+description = ""
+authors = ["ambosing <ambosing_@naver.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.4"
+uvicorn = {extras = ["standard"], version = "^0.32.0"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
