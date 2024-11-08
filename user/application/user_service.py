@@ -1,11 +1,12 @@
 from datetime import datetime
 
 from dependency_injector.wiring import inject
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 from starlette import status
 from ulid import ULID
 
 from common.auth import create_access_token, Role
+from user.application.email_service import EmailService
 from user.domain.repository.user_repo import IUserRepository
 from user.domain.user import User
 from utils.crypto import Crypto
@@ -13,12 +14,14 @@ from utils.crypto import Crypto
 
 class UserService:
     @inject
-    def __init__(self, user_repo: IUserRepository):
+    def __init__(self, user_repo: IUserRepository, email_service: EmailService):
         self.user_repo: IUserRepository = user_repo
         self.ulid = ULID()
         self.crypto = Crypto()
+        self.email_service = email_service
 
-    def create_user(self, name: str, email: str, password: str, memo: str | None = None):
+    def create_user(self, name: str, email: str, password: str, background_tasks: BackgroundTasks,
+                    memo: str | None = None):
         _user = None
 
         try:
@@ -41,7 +44,7 @@ class UserService:
             updated_at=now,
         )
         self.user_repo.save(user)
-
+        background_tasks.add_task(self.email_service.send_email, user.email)
         return user
 
     def update_user(self,

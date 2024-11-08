@@ -5,6 +5,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field, ConfigDict
+from starlette.background import BackgroundTask, BackgroundTasks
 
 from common.auth import CurrentUser, get_current_user, get_admin_user
 from containers import Container
@@ -44,7 +45,7 @@ class GetUsersResponse(BaseModel):
 @inject
 def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        user_service: UserService = Depends(Provide[Container.user_serivce])
+        user_service: UserService = Depends(Provide[Container.user_service])
 ):
     access_token = user_service.login(email=form_data.username, password=form_data.password)
 
@@ -57,8 +58,10 @@ def login(
 @router.post("", status_code=201)
 @inject
 def create_user(user: CreateUserBody,
-                user_service: UserService = Depends(Provide[Container.user_serivce])) -> UserResponse:
-    created_user = user_service.create_user(name=user.name, email=user.email, password=user.password)
+                background_tasks: BackgroundTasks,
+                user_service: UserService = Depends(Provide[Container.user_service]), ) -> UserResponse:
+    created_user = user_service.create_user(background_tasks=background_tasks, name=user.name, email=user.email,
+                                            password=user.password)
     return created_user
 
 
@@ -67,7 +70,7 @@ def create_user(user: CreateUserBody,
 def update_user(
         current_user: Annotated[CurrentUser, Depends(get_current_user)],
         user: UpdateUserBody,
-        user_service: UserService = Depends(Provide[Container.user_serivce])
+        user_service: UserService = Depends(Provide[Container.user_service])
 ):
     user = user_service.update_user(
         user_id=current_user.id,
@@ -83,7 +86,7 @@ def get_users(
         page: int = 1,
         items_per_page: int = 10,
         current_user=Depends(get_admin_user),
-        user_service: UserService = Depends(Provide[Container.user_serivce])
+        user_service: UserService = Depends(Provide[Container.user_service])
 ) -> GetUsersResponse:
     total_count, users = user_service.get_users(page, items_per_page)
 
@@ -98,6 +101,6 @@ def get_users(
 @inject
 def delete_user(
         current_user: Annotated[CurrentUser, Depends(get_current_user)],
-        user_service: UserService = Depends(Provide[Container.user_serivce])
+        user_service: UserService = Depends(Provide[Container.user_service])
 ):
     user_service.delete_user(current_user.id)
