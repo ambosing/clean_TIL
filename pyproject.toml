@@ -9,6 +9,18 @@ readme = "README.md"
 python = "^3.11"
 fastapi = "^0.115.4"
 uvicorn = {extras = ["standard"], version = "^0.32.0"}
+py-ulid = "^1.0.3"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+sqlalchemy = "^2.0.36"
+mysqlclient = "^2.2.5"
+alembic = "^1.14.0"
+bcrypt = "4.0.1"
+dependency-injector = "^4.43.0"
+pydantic = {extras = ["email"], version = "^2.9.2"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.17"
+python-dotenv = "^1.0.1"
+pydantic-settings = "^2.6.1"
 
 
 [build-system]
