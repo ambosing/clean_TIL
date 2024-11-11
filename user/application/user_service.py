@@ -7,6 +7,7 @@ from ulid import ULID
 
 from common.auth import create_access_token, Role
 from user.application.email_service import EmailService
+from user.application.send_welcome_email_task import SendWelcomeEmailTask
 from user.domain.repository.user_repo import IUserRepository
 from user.domain.user import User
 from utils.crypto import Crypto
@@ -20,7 +21,7 @@ class UserService:
         self.crypto = Crypto()
         self.email_service = email_service
 
-    def create_user(self, name: str, email: str, password: str, background_tasks: BackgroundTasks,
+    def create_user(self, name: str, email: str, password: str,  # background_tasks: BackgroundTasks,
                     memo: str | None = None):
         _user = None
 
@@ -44,7 +45,8 @@ class UserService:
             updated_at=now,
         )
         self.user_repo.save(user)
-        background_tasks.add_task(self.email_service.send_email, user.email)
+        # background_tasks.add_task(self.email_service.send_email, user.email)
+        SendWelcomeEmailTask().run(user.email)
         return user
 
     def update_user(self,
